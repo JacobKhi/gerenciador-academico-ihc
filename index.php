@@ -3,18 +3,30 @@ session_start();
 
 $erro = '';
 
+// Inclui nosso arquivo de conexão com o banco de dados
+require_once 'config/database.php';
+
+$erro = '';
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     $email = $_POST['email'];
     $senha = $_POST['senha'];
 
-    if ($email === 'aluno@email.com' && $senha === '12345') {
+    // Prepara uma consulta SQL para buscar o usuário pelo email.
+    // Usar 'prepare' com '?' previne injeção de SQL.
+    $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE email = ?");
+    $stmt->execute([$email]);
+    $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Verifica se o usuário foi encontrado e se a senha (ainda em texto plano) confere.
+    if ($usuario && $senha === $usuario['senha']) {
         
         // Login bem-sucedido!
-        // Guardamos uma informação na sessão para identificar o usuário.
-        $_SESSION['usuario_logado'] = true;
-        // Futuramente, poderíamos guardar o ID do usuário: $_SESSION['usuario_id'] = $id_do_banco;
-
+        // Guardamos o ID e o nome do usuário na sessão para uso futuro.
+        $_SESSION['usuario_id'] = $usuario['id'];
+        $_SESSION['usuario_nome'] = $usuario['nome'];
+        
         header('Location: dashboard.php');
         exit();
 
