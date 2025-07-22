@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
     // Verifica se o usuário foi encontrado e se a senha confere
-    if ($usuario && $senha === $usuario['senha']) {
+    if ($usuario && password_verify($senha, $usuario['senha'])) {
         
         // Login bem-sucedido! Guarda os dados na sessão
         $_SESSION['usuario_id'] = $usuario['id'];
