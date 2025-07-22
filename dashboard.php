@@ -1,48 +1,14 @@
 <?php
 session_start();
-
 require_once 'config/database.php';
 
+// A única responsabilidade agora é proteger a página e buscar dados para exibição.
 if (!isset($_SESSION['usuario_id'])) {
     header('Location: index.php');
     exit();
 }
 
 $usuario_id = $_SESSION['usuario_id'];
-
-// --- LÓGICA PARA APAGAR TAREFA ---
-if (isset($_GET['delete_task'])) {
-    $task_id_to_delete = $_GET['delete_task'];
-    $stmtDelete = $pdo->prepare("DELETE FROM tarefas WHERE id = ? AND usuario_id = ?");
-    $stmtDelete->execute([$task_id_to_delete, $usuario_id]);
-    header('Location: dashboard.php?page=tarefas');
-    exit();
-}
-
-// --- LÓGICA PARA PROCESSAR FORMULÁRIOS (POST) ---
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['add_task'])) {
-        $nova_descricao = trim($_POST['descricao']);
-        $nova_disciplina = trim($_POST['disciplina']);
-        if (!empty($nova_descricao)) {
-            $stmt = $pdo->prepare("INSERT INTO tarefas (descricao, disciplina, usuario_id) VALUES (?, ?, ?)");
-            $stmt->execute([$nova_descricao, $nova_disciplina, $usuario_id]);
-        }
-    } elseif (isset($_POST['update_tasks'])) {
-        $tarefasConcluidasIDs = $_POST['tarefas_concluidas'] ?? [];
-        $stmtReset = $pdo->prepare("UPDATE tarefas SET concluida = FALSE WHERE usuario_id = ?");
-        $stmtReset->execute([$usuario_id]);
-        if (!empty($tarefasConcluidasIDs)) {
-            $placeholders = implode(',', array_fill(0, count($tarefasConcluidasIDs), '?'));
-            $stmtUpdate = $pdo->prepare("UPDATE tarefas SET concluida = TRUE WHERE usuario_id = ? AND id IN ($placeholders)");
-            $params = array_merge([$usuario_id], $tarefasConcluidasIDs);
-            $stmtUpdate->execute($params);
-        }
-    }
-    // Redireciona para a página de tarefas após a ação para evitar reenvio de formulário
-    header('Location: dashboard.php?page=tarefas');
-    exit();
-}
 
 // --- BUSCA DE DADOS ---
 // Tarefas
@@ -59,13 +25,12 @@ foreach ($notas_raw as $nota) {
     $notas_agrupadas[$nota['disciplina']][] = $nota;
 }
 
-// --- BUSCA OS EVENTOS DA AGENDA ---
+// Eventos
 $stmt_eventos = $pdo->prepare("SELECT titulo, data_evento, tipo, disciplina FROM eventos ORDER BY data_evento ASC");
 $stmt_eventos->execute();
 $eventos = $stmt_eventos->fetchAll(PDO::FETCH_ASSOC);
 
 // --- ROTEAMENTO SIMPLES ---
-// Define qual página carregar. O padrão é 'tarefas'.
 $page = $_GET['page'] ?? 'tarefas';
 
 ?>

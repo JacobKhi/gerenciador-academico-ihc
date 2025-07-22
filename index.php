@@ -77,6 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </form>
 
         <div class="links-uteis">
+            <a href="register.php">Não tem uma conta? Registe-se</a>
             <a href="#">Esqueceu sua senha?</a>
         </div>
     </div>
