@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Protege a página e inclui a conexão com o banco
 require_once 'config/database.php';
 
 if (!isset($_SESSION['usuario_id'])) {
@@ -9,8 +8,21 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
-// Pega o ID do utilizador que está logado
 $usuario_id = $_SESSION['usuario_id'];
+
+// --- LÓGICA PARA APAGAR TAREFA (usando GET) ---
+// Verificamos se um ID de tarefa foi passado pela URL para ser apagado
+if (isset($_GET['delete_task'])) {
+    $task_id_to_delete = $_GET['delete_task'];
+
+    // Prepara a query para apagar, garantindo que o utilizador só pode apagar as suas próprias tarefas
+    $stmtDelete = $pdo->prepare("DELETE FROM tarefas WHERE id = ? AND usuario_id = ?");
+    $stmtDelete->execute([$task_id_to_delete, $usuario_id]);
+
+    // Redireciona para o próprio dashboard para limpar a URL e evitar re-apagar ao atualizar
+    header('Location: dashboard.php');
+    exit();
+}
 
 // Se o formulário for enviado, processa a ação correspondente
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -98,6 +110,8 @@ $tarefas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <span class="task-subject"><?php echo htmlspecialchars($tarefa['disciplina']); ?></span>
                                     <p class="task-description"><?php echo htmlspecialchars($tarefa['descricao']); ?></p>
                                 </div>
+                                <a href="dashboard.php?delete_task=<?php echo $tarefa['id']; ?>" class="delete-task-link" title="Apagar Tarefa">
+                                    &#128465; </a>
                             </li>
                         <?php endforeach; ?>
                     </ul>
