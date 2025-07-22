@@ -1,17 +1,20 @@
 <?php
+session_start();
 
 $erro = '';
 
-// Verifica se o formulário foi enviado (se o método da requisição é POST)
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
-    // Pega os dados do formulário
     $email = $_POST['email'];
     $senha = $_POST['senha'];
 
-    // --- LÓGICA DE AUTENTICAÇÃO SIMULADA ---
     if ($email === 'aluno@email.com' && $senha === '12345') {
         
+        // Login bem-sucedido!
+        // Guardamos uma informação na sessão para identificar o usuário.
+        $_SESSION['usuario_logado'] = true;
+        // Futuramente, poderíamos guardar o ID do usuário: $_SESSION['usuario_id'] = $id_do_banco;
+
         header('Location: dashboard.php');
         exit();
 
@@ -39,7 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <p>Acesse sua conta</p>
 
         <?php
-        // --- Exibe a mensagem de erro aqui, se ela existir ---
         if (!empty($erro)) {
             echo '<p class="error-message">' . $erro . '</p>';
         }

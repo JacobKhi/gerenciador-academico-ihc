@@ -1,7 +1,15 @@
 <?php
+session_start();
 
-// --- DADOS MOCADOS (FAKE) ---
-// Em um sistema real, estes dados viriam do banco de dados no início do script.
+// Esta é a nossa barreira de proteção.
+// Se a variável de sessão 'usuario_logado' não existir, significa que não houve login.
+if (!isset($_SESSION['usuario_logado'])) {
+    // Redireciona de volta para a tela de login.
+    header('Location: index.php');
+    exit();
+}
+
+
 $tarefas = [
     ['id' => 1, 'disciplina' => 'Matemática', 'descricao' => 'Resolver exercícios da página 42.', 'concluida' => true],
     ['id' => 2, 'disciplina' => 'História', 'descricao' => 'Ler o capítulo 5 sobre a Grécia Antiga.', 'concluida' => false],
@@ -10,16 +18,9 @@ $tarefas = [
 ];
 
 
-// Verifica se o formulário de tarefas foi submetido.
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    
-    // O formulário envia um array com os IDs de todas as tarefas que foram MARCADAS.
-    // Se nenhuma tarefa for marcada, este array estará vazio.
     $tarefasConcluidasIDs = $_POST['tarefas_concluidas'] ?? [];
 
-    // Este laço de repetição é o coração da lógica de atualização.
-    // Ele passa por cada tarefa e ajusta seu status 'concluida'
-    // baseado nos IDs que recebemos do formulário.
     foreach ($tarefas as $index => $tarefa) {
         if (in_array($tarefa['id'], $tarefasConcluidasIDs)) {
             $tarefas[$index]['concluida'] = true;
@@ -27,8 +28,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $tarefas[$index]['concluida'] = false;
         }
     }
-
-
 }
 
 ?>
@@ -48,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="dashboard-container">
         <header class="dashboard-header">
             <h1>Meu Dashboard</h1>
-            <a href="index.php" class="logout-link">Sair</a>
+            <a href="logout.php" class="logout-link">Sair</a>
         </header>
 
         <main class="dashboard-main">
