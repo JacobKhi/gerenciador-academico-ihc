@@ -1,7 +1,9 @@
 <?php
-session_start();
 
-$erro = '';
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+session_start();
 
 // Inclui nosso arquivo de conexão com o banco de dados
 require_once 'config/database.php';
@@ -10,23 +12,24 @@ $erro = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
-    $email = $_POST['email'];
-    $senha = $_POST['senha'];
+    // É uma boa prática sempre limpar os dados do formulário
+    $email = trim($_POST['email']);
+    $senha = trim($_POST['senha']);
 
-    // Prepara uma consulta SQL para buscar o usuário pelo email.
-    // Usar 'prepare' com '?' previne injeção de SQL.
+    // Prepara uma consulta SQL para buscar o usuário pelo email
     $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE email = ?");
     $stmt->execute([$email]);
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Verifica se o usuário foi encontrado e se a senha (ainda em texto plano) confere.
+    // Verifica se o usuário foi encontrado e se a senha confere
     if ($usuario && $senha === $usuario['senha']) {
         
-        // Login bem-sucedido!
-        // Guardamos o ID e o nome do usuário na sessão para uso futuro.
+        // Login bem-sucedido! Guarda os dados na sessão
         $_SESSION['usuario_id'] = $usuario['id'];
         $_SESSION['usuario_nome'] = $usuario['nome'];
+        $_SESSION['usuario_logado'] = true; 
         
+        // Redireciona para o dashboard
         header('Location: dashboard.php');
         exit();
 
@@ -55,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <?php
         if (!empty($erro)) {
-            echo '<p class="error-message">' . $erro . '</p>';
+            echo '<p class="error-message">' . htmlspecialchars($erro) . '</p>';
         }
         ?>
 

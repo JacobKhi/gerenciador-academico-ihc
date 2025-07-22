@@ -1,36 +1,46 @@
 <?php
 session_start();
 
-// Esta é a nossa barreira de proteção.
-// Se a variável de sessão 'usuario_logado' não existir, significa que não houve login.
-if (!isset($_SESSION['usuario_logado'])) {
-    // Redireciona de volta para a tela de login.
+// Protege a página e inclui a conexão com o banco
+require_once 'config/database.php';
+
+if (!isset($_SESSION['usuario_id'])) { // Verificaremos pelo ID do usuário agora
     header('Location: index.php');
     exit();
 }
 
-
-$tarefas = [
-    ['id' => 1, 'disciplina' => 'Matemática', 'descricao' => 'Resolver exercícios da página 42.', 'concluida' => true],
-    ['id' => 2, 'disciplina' => 'História', 'descricao' => 'Ler o capítulo 5 sobre a Grécia Antiga.', 'concluida' => false],
-    ['id' => 3, 'disciplina' => 'Ciências', 'descricao' => 'Entregar o relatório do laboratório até sexta-feira.', 'concluida' => false],
-    ['id' => 4, 'disciplina' => 'Português', 'descricao' => 'Fazer a redação sobre o tema "Tecnologia e Sociedade".', 'concluida' => false]
-];
+// Pega o ID do usuário que está logado
+$usuario_id = $_SESSION['usuario_id'];
 
 
+// Se o formulário for enviado, atualiza as tarefas no BANCO
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $tarefasConcluidasIDs = $_POST['tarefas_concluidas'] ?? [];
 
-    foreach ($tarefas as $index => $tarefa) {
-        if (in_array($tarefa['id'], $tarefasConcluidasIDs)) {
-            $tarefas[$index]['concluida'] = true;
-        } else {
-            $tarefas[$index]['concluida'] = false;
-        }
+    // Primeiro, marca TODAS as tarefas deste usuário como NÃO concluídas
+    $stmtReset = $pdo->prepare("UPDATE tarefas SET concluida = FALSE WHERE usuario_id = ?");
+    $stmtReset->execute([$usuario_id]);
+
+    // Se houver tarefas marcadas, atualiza apenas elas para CONCLUÍDAS
+    if (!empty($tarefasConcluidasIDs)) {
+        // Cria uma string de '?' para a consulta IN (?, ?, ?)
+        $placeholders = implode(',', array_fill(0, count($tarefasConcluidasIDs), '?'));
+        
+        $stmtUpdate = $pdo->prepare("UPDATE tarefas SET concluida = TRUE WHERE usuario_id = ? AND id IN ($placeholders)");
+        
+        // Junta o ID do usuário com os IDs das tarefas para a execução
+        $params = array_merge([$usuario_id], $tarefasConcluidasIDs);
+        $stmtUpdate->execute($params);
     }
 }
 
+// Busca no banco de dados TODAS as tarefas do usuário logado
+$stmt = $pdo->prepare("SELECT * FROM tarefas WHERE usuario_id = ? ORDER BY disciplina");
+$stmt->execute([$usuario_id]);
+$tarefas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
