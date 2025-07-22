@@ -4,43 +4,49 @@ session_start();
 // Protege a página e inclui a conexão com o banco
 require_once 'config/database.php';
 
-if (!isset($_SESSION['usuario_id'])) { // Verificaremos pelo ID do usuário agora
+if (!isset($_SESSION['usuario_id'])) {
     header('Location: index.php');
     exit();
 }
 
-// Pega o ID do usuário que está logado
+// Pega o ID do utilizador que está logado
 $usuario_id = $_SESSION['usuario_id'];
 
-
-// Se o formulário for enviado, atualiza as tarefas no BANCO
+// Se o formulário for enviado, processa a ação correspondente
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $tarefasConcluidasIDs = $_POST['tarefas_concluidas'] ?? [];
+    
+    // Verifica se é o formulário de ADICIONAR tarefa
+    if (isset($_POST['add_task'])) {
+        $nova_descricao = trim($_POST['descricao']);
+        $nova_disciplina = trim($_POST['disciplina']);
 
-    // Primeiro, marca TODAS as tarefas deste usuário como NÃO concluídas
-    $stmtReset = $pdo->prepare("UPDATE tarefas SET concluida = FALSE WHERE usuario_id = ?");
-    $stmtReset->execute([$usuario_id]);
+        if (!empty($nova_descricao)) {
+            $stmt = $pdo->prepare("INSERT INTO tarefas (descricao, disciplina, usuario_id) VALUES (?, ?, ?)");
+            $stmt->execute([$nova_descricao, $nova_disciplina, $usuario_id]);
+        }
+    } 
+    // Verifica se é o formulário de ATUALIZAR tarefas existentes
+    elseif (isset($_POST['update_tasks'])) {
+        $tarefasConcluidasIDs = $_POST['tarefas_concluidas'] ?? [];
 
-    // Se houver tarefas marcadas, atualiza apenas elas para CONCLUÍDAS
-    if (!empty($tarefasConcluidasIDs)) {
-        // Cria uma string de '?' para a consulta IN (?, ?, ?)
-        $placeholders = implode(',', array_fill(0, count($tarefasConcluidasIDs), '?'));
-        
-        $stmtUpdate = $pdo->prepare("UPDATE tarefas SET concluida = TRUE WHERE usuario_id = ? AND id IN ($placeholders)");
-        
-        // Junta o ID do usuário com os IDs das tarefas para a execução
-        $params = array_merge([$usuario_id], $tarefasConcluidasIDs);
-        $stmtUpdate->execute($params);
+        $stmtReset = $pdo->prepare("UPDATE tarefas SET concluida = FALSE WHERE usuario_id = ?");
+        $stmtReset->execute([$usuario_id]);
+
+        if (!empty($tarefasConcluidasIDs)) {
+            $placeholders = implode(',', array_fill(0, count($tarefasConcluidasIDs), '?'));
+            $stmtUpdate = $pdo->prepare("UPDATE tarefas SET concluida = TRUE WHERE usuario_id = ? AND id IN ($placeholders)");
+            $params = array_merge([$usuario_id], $tarefasConcluidasIDs);
+            $stmtUpdate->execute($params);
+        }
     }
 }
 
-// Busca no banco de dados TODAS as tarefas do usuário logado
-$stmt = $pdo->prepare("SELECT * FROM tarefas WHERE usuario_id = ? ORDER BY disciplina");
+// Busca no banco de dados TODAS as tarefas do utilizador logado
+$stmt = $pdo->prepare("SELECT * FROM tarefas WHERE usuario_id = ? ORDER BY disciplina, id DESC");
 $stmt->execute([$usuario_id]);
 $tarefas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -56,15 +62,26 @@ $tarefas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="dashboard-container">
         <header class="dashboard-header">
-            <h1>Meu Dashboard</h1>
+            <h1>Olá, <?php echo htmlspecialchars($_SESSION['usuario_nome']); ?>!</h1>
             <a href="logout.php" class="logout-link">Sair</a>
         </header>
 
         <main class="dashboard-main">
+            <section class="add-task-section">
+                <h2>Adicionar Nova Tarefa</h2>
+                <form action="dashboard.php" method="POST" class="add-task-form">
+                    <input type="text" name="disciplina" placeholder="Disciplina (ex: Matemática)" class="task-input">
+                    <input type="text" name="descricao" placeholder="O que precisa ser feito?" required class="task-input-desc">
+                    <button type="submit" name="add_task">Adicionar</button>
+                </form>
+            </section>
+
             <section class="tasks-section">
-                <h2>Minhas Tarefas Pendentes</h2>
+                <h2>Minhas Tarefas</h2>
                 
                 <form action="dashboard.php" method="POST">
+                    <button type="submit" name="update_tasks" class="button-update-tasks">Atualizar Tarefas</button>
+                    
                     <ul class="tasks-list">
                         <?php foreach ($tarefas as $tarefa): ?>
                             <li class="task-item <?php echo $tarefa['concluida'] ? 'completed' : ''; ?>">
@@ -84,10 +101,7 @@ $tarefas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </li>
                         <?php endforeach; ?>
                     </ul>
-
-                    <button type="submit" class="button-update-tasks">Atualizar Tarefas</button>
                 </form>
-
             </section>
         </main>
     </div>
