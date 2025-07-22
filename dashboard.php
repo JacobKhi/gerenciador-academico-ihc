@@ -10,40 +10,28 @@ if (!isset($_SESSION['usuario_id'])) {
 
 $usuario_id = $_SESSION['usuario_id'];
 
-// --- LÓGICA PARA APAGAR TAREFA (usando GET) ---
-// Verificamos se um ID de tarefa foi passado pela URL para ser apagado
+// --- LÓGICA PARA APAGAR TAREFA ---
 if (isset($_GET['delete_task'])) {
     $task_id_to_delete = $_GET['delete_task'];
-
-    // Prepara a query para apagar, garantindo que o utilizador só pode apagar as suas próprias tarefas
     $stmtDelete = $pdo->prepare("DELETE FROM tarefas WHERE id = ? AND usuario_id = ?");
     $stmtDelete->execute([$task_id_to_delete, $usuario_id]);
-
-    // Redireciona para o próprio dashboard para limpar a URL e evitar re-apagar ao atualizar
-    header('Location: dashboard.php');
+    header('Location: dashboard.php?page=tarefas');
     exit();
 }
 
-// Se o formulário for enviado, processa a ação correspondente
+// --- LÓGICA PARA PROCESSAR FORMULÁRIOS (POST) ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    
-    // Verifica se é o formulário de ADICIONAR tarefa
     if (isset($_POST['add_task'])) {
         $nova_descricao = trim($_POST['descricao']);
         $nova_disciplina = trim($_POST['disciplina']);
-
         if (!empty($nova_descricao)) {
             $stmt = $pdo->prepare("INSERT INTO tarefas (descricao, disciplina, usuario_id) VALUES (?, ?, ?)");
             $stmt->execute([$nova_descricao, $nova_disciplina, $usuario_id]);
         }
-    } 
-    // Verifica se é o formulário de ATUALIZAR tarefas existentes
-    elseif (isset($_POST['update_tasks'])) {
+    } elseif (isset($_POST['update_tasks'])) {
         $tarefasConcluidasIDs = $_POST['tarefas_concluidas'] ?? [];
-
         $stmtReset = $pdo->prepare("UPDATE tarefas SET concluida = FALSE WHERE usuario_id = ?");
         $stmtReset->execute([$usuario_id]);
-
         if (!empty($tarefasConcluidasIDs)) {
             $placeholders = implode(',', array_fill(0, count($tarefasConcluidasIDs), '?'));
             $stmtUpdate = $pdo->prepare("UPDATE tarefas SET concluida = TRUE WHERE usuario_id = ? AND id IN ($placeholders)");
@@ -51,12 +39,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmtUpdate->execute($params);
         }
     }
+    // Redireciona para a página de tarefas após a ação para evitar reenvio de formulário
+    header('Location: dashboard.php?page=tarefas');
+    exit();
 }
 
-// Busca no banco de dados TODAS as tarefas do utilizador logado
-$stmt = $pdo->prepare("SELECT * FROM tarefas WHERE usuario_id = ? ORDER BY disciplina, id DESC");
-$stmt->execute([$usuario_id]);
-$tarefas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// --- BUSCA DE DADOS ---
+// Tarefas
+$stmt_tarefas = $pdo->prepare("SELECT * FROM tarefas WHERE usuario_id = ? ORDER BY disciplina, id DESC");
+$stmt_tarefas->execute([$usuario_id]);
+$tarefas = $stmt_tarefas->fetchAll(PDO::FETCH_ASSOC);
+
+// Notas
+$stmt_notas = $pdo->prepare("SELECT disciplina, tipo_avaliacao, nota FROM notas WHERE usuario_id = ? ORDER BY disciplina");
+$stmt_notas->execute([$usuario_id]);
+$notas_raw = $stmt_notas->fetchAll(PDO::FETCH_ASSOC);
+$notas_agrupadas = [];
+foreach ($notas_raw as $nota) {
+    $notas_agrupadas[$nota['disciplina']][] = $nota;
+}
+
+// --- BUSCA OS EVENTOS DA AGENDA ---
+$stmt_eventos = $pdo->prepare("SELECT titulo, data_evento, tipo, disciplina FROM eventos ORDER BY data_evento ASC");
+$stmt_eventos->execute();
+$eventos = $stmt_eventos->fetchAll(PDO::FETCH_ASSOC);
+
+// --- ROTEAMENTO SIMPLES ---
+// Define qual página carregar. O padrão é 'tarefas'.
+$page = $_GET['page'] ?? 'tarefas';
 
 ?>
 <!DOCTYPE html>
@@ -78,45 +88,27 @@ $tarefas = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <a href="logout.php" class="logout-link">Sair</a>
         </header>
 
-        <main class="dashboard-main">
-            <section class="add-task-section">
-                <h2>Adicionar Nova Tarefa</h2>
-                <form action="dashboard.php" method="POST" class="add-task-form">
-                    <input type="text" name="disciplina" placeholder="Disciplina (ex: Matemática)" class="task-input">
-                    <input type="text" name="descricao" placeholder="O que precisa ser feito?" required class="task-input-desc">
-                    <button type="submit" name="add_task">Adicionar</button>
-                </form>
-            </section>
+        <nav class="dashboard-nav">
+            <a href="dashboard.php?page=tarefas" class="<?php echo $page === 'tarefas' ? 'active' : ''; ?>">Tarefas</a>
+            <a href="dashboard.php?page=notas" class="<?php echo $page === 'notas' ? 'active' : ''; ?>">Notas</a>
+            <a href="dashboard.php?page=agenda" class="<?php echo $page === 'agenda' ? 'active' : ''; ?>">Agenda</a>
+            </nav>
 
-            <section class="tasks-section">
-                <h2>Minhas Tarefas</h2>
-                
-                <form action="dashboard.php" method="POST">
-                    <button type="submit" name="update_tasks" class="button-update-tasks">Atualizar Tarefas</button>
-                    
-                    <ul class="tasks-list">
-                        <?php foreach ($tarefas as $tarefa): ?>
-                            <li class="task-item <?php echo $tarefa['concluida'] ? 'completed' : ''; ?>">
-                                <div class="task-checkbox">
-                                    <input 
-                                        type="checkbox" 
-                                        name="tarefas_concluidas[]" 
-                                        value="<?php echo $tarefa['id']; ?>"
-                                        id="task-<?php echo $tarefa['id']; ?>" 
-                                        <?php echo $tarefa['concluida'] ? 'checked' : ''; ?>>
-                                    <label for="task-<?php echo $tarefa['id']; ?>"></label>
-                                </div>
-                                <div class="task-info">
-                                    <span class="task-subject"><?php echo htmlspecialchars($tarefa['disciplina']); ?></span>
-                                    <p class="task-description"><?php echo htmlspecialchars($tarefa['descricao']); ?></p>
-                                </div>
-                                <a href="dashboard.php?delete_task=<?php echo $tarefa['id']; ?>" class="delete-task-link" title="Apagar Tarefa">
-                                    &#128465; </a>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                </form>
-            </section>
+        <main class="dashboard-main">
+            <?php
+            // Carrega o conteúdo da aba selecionada
+            if ($page === 'tarefas') {
+                include 'partials/_tarefas.php';
+            } elseif ($page === 'notas') {
+                include 'partials/_notas.php';
+            } elseif ($page === 'agenda') {
+                include 'partials/_agenda.php';
+            }
+            else {
+                // Se uma página inválida for solicitada, carrega as tarefas por padrão
+                include 'partials/_tarefas.php';
+            }
+            ?>
         </main>
     </div>
 

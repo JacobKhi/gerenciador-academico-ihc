@@ -286,3 +286,149 @@ button:hover {
 .delete-task-link:hover {
     color: #dc3545; /* Vermelho para indicar perigo/apagar */
 }
+
+/* --- Estilos da Secção de Notas --- */
+.grades-section {
+    margin-top: 40px;
+}
+
+.grades-section h2 {
+    margin-bottom: 20px;
+}
+
+.grades-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.grade-card {
+    background-color: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.grade-card h3 {
+    color: #26A69A;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.grade-card ul {
+    list-style: none;
+    padding: 0;
+}
+
+.grade-card li {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 15px;
+}
+
+.grade-card .grade-value {
+    font-weight: 700;
+    background-color: #e9ecef;
+    padding: 3px 8px;
+    border-radius: 5px;
+}
+
+/* --- Estilos do Menu de Navegação do Dashboard --- */
+.dashboard-nav {
+    display: flex;
+    gap: 10px;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 30px;
+}
+
+.dashboard-nav a {
+    padding: 15px 20px;
+    text-decoration: none;
+    color: #6c757d;
+    font-weight: 700;
+    border-bottom: 3px solid transparent; /* Borda invisível para manter o alinhamento */
+    transition: all 0.3s;
+}
+
+.dashboard-nav a:hover {
+    color: #495057;
+}
+
+.dashboard-nav a.active {
+    color: #26A69A; /* Cor principal */
+    border-bottom-color: #26A69A;
+}
+
+/* --- Estilos da Secção de Agenda --- */
+.schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.schedule-item {
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid #e9ecef;
+    border-left: 5px solid #ccc; /* Borda padrão */
+    padding: 15px 20px;
+    border-radius: 8px;
+}
+
+.schedule-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+    width: 50px;
+}
+
+.schedule-date .day {
+    font-size: 24px;
+    font-weight: 700;
+    color: #495057;
+}
+
+.schedule-date .month {
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #6c757d;
+}
+
+.schedule-info {
+    flex-grow: 1;
+}
+
+.schedule-info h4 {
+    margin-bottom: 5px;
+}
+
+.schedule-info p {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.schedule-type-badge {
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+/* Cores específicas por tipo de evento */
+.schedule-type-prova { border-left-color: #dc3545; } /* Vermelho */
+.schedule-type-prova .schedule-type-badge { background-color: #dc3545; color: white; }
+
+.schedule-type-trabalho { border-left-color: #ffc107; } /* Amarelo */
+.schedule-type-trabalho .schedule-type-badge { background-color: #ffc107; color: #212529; }
+
+.schedule-type-feriado { border-left-color: #17a2b8; } /* Azul Info */
+.schedule-type-feriado .schedule-type-badge { background-color: #17a2b8; color: white; }
+
+.schedule-type-evento { border-left-color: #6c757d; } /* Cinza */
+.schedule-type-evento .schedule-type-badge { background-color: #6c757d; color: white; }
