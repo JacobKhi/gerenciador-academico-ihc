@@ -12,11 +12,14 @@ body {
     font-family: 'Montserrat', sans-serif;
     background-color: #fdfdfd;
     color: #495057;
-    
+}
+
+/* --- Wrapper para Centralização de Páginas como Login --- */
+.login-container-wrapper {
     display: flex;
     justify-content: center;
-    align-items: center; 
-    min-height: 100vh;     
+    align-items: center;
+    min-height: 100vh;
 }
 
 /* --- Estilo Padrão para Inputs de Formulário --- */
@@ -38,7 +41,6 @@ input[type="password"]:focus {
     border-color: #26A69A;
     box-shadow: 0 0 0 3px rgba(38, 166, 154, 0.2);
 }
-
 
 /* --- Estilos Gerais de Botão --- */
 button {
@@ -63,7 +65,6 @@ button:hover {
     padding: 15px;
 }
 
-
 /* --- Container do Login --- */
 .login-container {
     padding: 40px;
@@ -72,6 +73,7 @@ button:hover {
     width: 100%;
     max-width: 400px;
     text-align: center;
+    background-color: #fff;
 }
 
 .login-container h1 {
@@ -107,6 +109,7 @@ button:hover {
     text-decoration: none;
     font-weight: 700;
     transition: color 0.3s;
+    margin: 0 10px;
 }
 
 .links-uteis a:hover {
@@ -137,8 +140,7 @@ button:hover {
     justify-content: space-between;
     align-items: center;
     padding-bottom: 20px;
-    border-bottom: 1px solid #e9ecef;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 .dashboard-header h1 {
@@ -158,6 +160,33 @@ button:hover {
 .logout-link:hover {
     background-color: #ced4da;
 }
+
+/* --- Estilos do Menu de Navegação do Dashboard --- */
+.dashboard-nav {
+    display: flex;
+    gap: 10px;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 30px;
+}
+
+.dashboard-nav a {
+    padding: 15px 20px;
+    text-decoration: none;
+    color: #6c757d;
+    font-weight: 700;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+}
+
+.dashboard-nav a:hover {
+    color: #495057;
+}
+
+.dashboard-nav a.active {
+    color: #26A69A;
+    border-bottom-color: #26A69A;
+}
+
 
 /* --- Estilos da Secção de Adicionar Tarefa --- */
 .add-task-section {
@@ -191,7 +220,6 @@ button:hover {
     flex-shrink: 0;
 }
 
-
 /* --- Estilos da Secção de Tarefas --- */
 .tasks-section {
     position: relative;
@@ -211,7 +239,6 @@ button:hover {
 .tasks-list {
     list-style: none;
     padding: 0;
-    margin-top: 20px;
 }
 
 .task-item {
@@ -245,6 +272,18 @@ button:hover {
     color: #26A69A;
 }
 
+.delete-task-link {
+    text-decoration: none;
+    font-size: 22px;
+    color: #ced4da;
+    margin-left: 20px;
+    transition: color 0.3s;
+}
+
+.delete-task-link:hover {
+    color: #dc3545;
+}
+
 /* --- Estilo Customizado para o Checkbox (com SVG) --- */
 .task-checkbox {
     margin-right: 20px;
@@ -272,19 +311,6 @@ button:hover {
     background-position: center;
     background-repeat: no-repeat;
     background-size: 60%;
-}
-
-/* --- Estilo do Link de Apagar Tarefa --- */
-.delete-task-link {
-    text-decoration: none;
-    font-size: 22px;
-    color: #ced4da;
-    margin-left: 20px;
-    transition: color 0.3s;
-}
-
-.delete-task-link:hover {
-    color: #dc3545; /* Vermelho para indicar perigo/apagar */
 }
 
 /* --- Estilos da Secção de Notas --- */
@@ -333,32 +359,6 @@ button:hover {
     background-color: #e9ecef;
     padding: 3px 8px;
     border-radius: 5px;
-}
-
-/* --- Estilos do Menu de Navegação do Dashboard --- */
-.dashboard-nav {
-    display: flex;
-    gap: 10px;
-    border-bottom: 1px solid #e9ecef;
-    margin-bottom: 30px;
-}
-
-.dashboard-nav a {
-    padding: 15px 20px;
-    text-decoration: none;
-    color: #6c757d;
-    font-weight: 700;
-    border-bottom: 3px solid transparent; /* Borda invisível para manter o alinhamento */
-    transition: all 0.3s;
-}
-
-.dashboard-nav a:hover {
-    color: #495057;
-}
-
-.dashboard-nav a.active {
-    color: #26A69A; /* Cor principal */
-    border-bottom-color: #26A69A;
 }
 
 /* --- Estilos da Secção de Agenda --- */
@@ -432,3 +432,124 @@ button:hover {
 
 .schedule-type-evento { border-left-color: #6c757d; } /* Cinza */
 .schedule-type-evento .schedule-type-badge { background-color: #6c757d; color: white; }
+
+/* --- Estilos do Dashboard do Professor --- */
+.teacher-classes-section h2 {
+    margin-bottom: 20px;
+}
+
+.class-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.class-card {
+    background-color: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.class-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.class-card h3 {
+    margin-bottom: 5px;
+}
+
+.class-card p {
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.class-card-link {
+    display: inline-block;
+    background-color: #26A69A;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: background-color 0.3s;
+}
+
+.class-card-link:hover {
+    background-color: #00897B;
+}
+
+/* --- Estilos da Página de Gestão de Turma --- */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 30px;
+}
+
+.page-header .subtitle {
+    color: #6c757d;
+    font-size: 18px;
+}
+
+.back-link {
+    background-color: #6c757d;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: background-color 0.3s;
+}
+
+.back-link:hover {
+    background-color: #5a6268;
+}
+
+.student-list-section h2 {
+    margin-bottom: 20px;
+}
+
+.student-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+}
+
+.student-table th, .student-table td {
+    border: 1px solid #e9ecef;
+    padding: 15px;
+    text-align: left;
+}
+
+.student-table thead {
+    background-color: #f8f9fa;
+}
+
+.student-table th {
+    font-weight: 700;
+}
+
+.actions-cell {
+    display: flex;
+    gap: 10px;
+}
+
+.action-button {
+    background-color: #e9ecef;
+    color: #495057;
+    padding: 8px 12px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.action-button:hover {
+    background-color: #ced4da;
+}
