@@ -26,26 +26,38 @@ require_once '../src/controllers/gerir_turma_controller.php';
 
         <main class="dashboard-main">
             <section class="student-list-section">
-                <h2>Alunos da Turma</h2>
-                <table class="student-table">
-                    <thead>
-                        <tr>
-                            <th>Nome do Aluno</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($alunos_da_turma as $aluno): ?>
+                <h2>Lançar / Editar Notas</h2>
+                <form action="../processa_acoes.php" method="POST">
+                    <input type="hidden" name="action" value="lancar_notas">
+                    <input type="hidden" name="turma_id" value="<?php echo $turma_id; ?>">
+                    <input type="hidden" name="disciplina_id" value="<?php echo $disciplina_id; ?>">
+
+                    <div class="form-group">
+                        <label for="tipo_avaliacao">Nome da Avaliação (ex: Prova 1, Trabalho Final)</label>
+                        <input type="text" id="tipo_avaliacao" name="tipo_avaliacao" required>
+                    </div>
+
+                    <table class="student-table">
+                        <thead>
                             <tr>
-                                <td><?php echo htmlspecialchars($aluno['nome']); ?></td>
-                                <td class="actions-cell">
-                                    <a href="#" class="action-button">Lançar Nota</a>
-                                    <a href="#" class="action-button">Ver Presenças</a>
-                                </td>
+                                <th>Nome do Aluno</th>
+                                <th style="width: 150px;">Nota (0.00 a 10.00)</th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($alunos_da_turma as $aluno): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($aluno['nome']); ?></td>
+                                    <td>
+                                        <input type="hidden" name="aluno_id[]" value="<?php echo $aluno['id']; ?>">
+                                        <input type="number" name="notas[]" class="grade-input" step="0.01" min="0" max="10">
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    <button type="submit" class="button-update-tasks" style="float: right; margin-top: 20px;">Salvar Notas</button>
+                </form>
             </section>
         </main>
     </div>
